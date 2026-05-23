@@ -1,26 +1,137 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── Dark theme (default) ───────────────────────────────────────────────── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base:       #080c14;
+  --bg-card:       #0f1623;
+  --bg-card-hover: #141d2e;
+  --border:        #1e2d40;
+  --border-subtle: #162030;
+
+  --text-primary:  #e2e8f0;
+  --text-muted:    #64748b;
+  --text-dim:      #3d5068;
+
+  --accent:        #6366f1;
+  --accent-glow:   rgba(99,102,241,0.15);
+
+  --green:         #10b981;
+  --green-glow:    rgba(16,185,129,0.12);
+  --yellow:        #f59e0b;
+  --yellow-glow:   rgba(245,158,11,0.12);
+  --orange:        #f97316;
+  --orange-glow:   rgba(249,115,22,0.12);
+  --red:           #ef4444;
+  --red-glow:      rgba(239,68,68,0.12);
+
+  /* chart line colors */
+  --c-frequency:  #f59e0b;
+  --c-ctr:        #60a5fa;
+  --c-cpc:        #a78bfa;
+  --c-cpa:        #fb923c;
+  --c-roas:       #34d399;
+  --c-spend:      #6366f1;
+  --c-reach:      #38bdf8;
+  --c-impressions:#818cf8;
+}
+
+/* ─── Light theme ────────────────────────────────────────────────────────── */
+html.light {
+  --bg-base:       #f1f5f9;
+  --bg-card:       #ffffff;
+  --bg-card-hover: #f8fafc;
+  --border:        #e2e8f0;
+  --border-subtle: #f1f5f9;
+
+  --text-primary:  #0f172a;
+  --text-muted:    #64748b;
+  --text-dim:      #94a3b8;
+
+  --accent:        #6366f1;
+  --accent-glow:   rgba(99,102,241,0.1);
+
+  --green-glow:    rgba(16,185,129,0.1);
+  --yellow-glow:   rgba(245,158,11,0.1);
+  --orange-glow:   rgba(249,115,22,0.1);
+  --red-glow:      rgba(239,68,68,0.1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--bg-base);
+  --color-foreground: var(--text-primary);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-dim);
+}
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.section-title {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.chart-tooltip {
+  background: #0f1623;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.8125rem;
+  color: var(--text-primary);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+}
+
+html.light .chart-tooltip {
+  background: #ffffff;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.12);
+}
+
+/* Make hardcoded dark slate text readable on light backgrounds */
+html.light .text-slate-100 { color: #0f172a; }
+html.light .text-slate-200 { color: #1e293b; }
+html.light .text-slate-300 { color: #334155; }
+html.light .text-slate-400 { color: #475569; }
+
+/* Recharts grid / axis lines in light mode */
+html.light .recharts-cartesian-grid line,
+html.light .recharts-cartesian-grid-horizontal line,
+html.light .recharts-cartesian-grid-vertical line { stroke: #e2e8f0; }
+html.light .recharts-reference-area rect { fill: inherit; }
+html.light .recharts-reference-line line { stroke: #cbd5e1; }
