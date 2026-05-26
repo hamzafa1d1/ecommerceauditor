@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Card, CardHeader, CardTitle, CardMuted } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { fmt$, fmtPct } from '@/lib/formatters';
@@ -13,6 +13,7 @@ import type { Ad } from '@/lib/mock-data';
 interface Props {
   data?: Ad[];
   isLoading?: boolean;
+  highlightedId?: string | null;
 }
 
 // ─── Colour helpers ───────────────────────────────────────────────────────────
@@ -285,7 +286,7 @@ function AdNextStepsModal({ ad, onClose }: { ad: Ad; onClose: () => void }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function AdsGrid({ data, isLoading }: Props) {
+export function AdsGrid({ data, isLoading, highlightedId }: Props) {
   const { t } = useLang();
   const [sortKey, setSortKey] = useState<SortKey>('spend');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
@@ -294,6 +295,22 @@ export function AdsGrid({ data, isLoading }: Props) {
   const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'paused'>('all');
   const [stageFilter, setStageFilter]   = useState<'all' | number>('all');
   const [hookTier, setHookTier]         = useState<'all' | 'strong' | 'mid' | 'weak'>('all');
+  const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
+
+  // When highlightedId changes, clear filters so the row is visible, then scroll to it
+  useEffect(() => {
+    if (!highlightedId) return;
+    setSearch('');
+    setStatusFilter('all');
+    setStageFilter('all');
+    setHookTier('all');
+    // Timeout gives React a tick to re-render the unfiltered list before we scroll
+    const t = setTimeout(() => {
+      const el = rowRefs.current.get(highlightedId);
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+    return () => clearTimeout(t);
+  }, [highlightedId]);
 
   const isFiltered = search.trim() !== '' || statusFilter !== 'all' || stageFilter !== 'all' || hookTier !== 'all';
   const clearFilters = () => { setSearch(''); setStatusFilter('all'); setStageFilter('all'); setHookTier('all'); };
@@ -552,9 +569,15 @@ export function AdsGrid({ data, isLoading }: Props) {
                 return (
                   <tr
                     key={ad.id}
+                    ref={el => {
+                      if (el) rowRefs.current.set(ad.id, el);
+                      else rowRefs.current.delete(ad.id);
+                    }}
                     className={cn(
-                      'border-b border-[var(--border-subtle)] transition-colors hover:bg-[var(--bg-card-hover)]',
-                      i % 2 !== 0 && 'bg-[var(--border-subtle)]/20',
+                      'border-b border-[var(--border-subtle)] transition-colors',
+                      highlightedId === ad.id
+                        ? 'bg-[var(--accent)]/10 outline outline-1 outline-[var(--accent)]/40'
+                        : cn('hover:bg-[var(--bg-card-hover)]', i % 2 !== 0 && 'bg-[var(--border-subtle)]/20'),
                     )}
                   >
                     {/* Ad name */}

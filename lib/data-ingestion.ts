@@ -27,11 +27,21 @@ import type { Campaign, Ad, DailyInsight } from './mock-data';
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 
+// Primary report files dropped at the project root by the user.
+// These take precedence over the fallback data/ folder files.
+// To swap to a new export, replace either file — column names must match Meta Ads Manager format.
+const PRIMARY_CAMPAIGNS_CSV = path.join(process.cwd(), 'adname-report.csv');
+const PRIMARY_ADS_CSV       = path.join(process.cwd(), 'Untitled-report-Apr-23-2023-to-May-23-2026 (1).csv');
+
 // ─── File availability checks ─────────────────────────────────────────────────
 
-export function hasCsvData():  boolean { return fs.existsSync(path.join(DATA_DIR, 'campaigns.csv')); }
-export function hasDailyCsv(): boolean { return fs.existsSync(path.join(DATA_DIR, 'daily.csv'));     }
-export function hasAdsCsv():   boolean { return fs.existsSync(path.join(DATA_DIR, 'ads.csv'));       }
+export function hasCsvData():  boolean {
+  return fs.existsSync(PRIMARY_CAMPAIGNS_CSV) || fs.existsSync(path.join(DATA_DIR, 'campaigns.csv'));
+}
+export function hasDailyCsv(): boolean { return fs.existsSync(path.join(DATA_DIR, 'daily.csv')); }
+export function hasAdsCsv():   boolean {
+  return fs.existsSync(PRIMARY_ADS_CSV) || fs.existsSync(path.join(DATA_DIR, 'ads.csv'));
+}
 
 // ─── Extended Campaign type ───────────────────────────────────────────────────
 // Superset of Campaign — the extra fields are rendered in the campaign table
@@ -129,7 +139,11 @@ function makeDailyData(
 // ─── loadCampaigns ────────────────────────────────────────────────────────────
 
 export function loadCampaigns(aovUsd = 10): CsvCampaign[] {
-  const raw  = fs.readFileSync(path.join(DATA_DIR, 'campaigns.csv'), 'utf-8');
+  // Prefer root-level export; fall back to data/campaigns.csv
+  const filePath = fs.existsSync(PRIMARY_CAMPAIGNS_CSV)
+    ? PRIMARY_CAMPAIGNS_CSV
+    : path.join(DATA_DIR, 'campaigns.csv');
+  const raw  = fs.readFileSync(filePath, 'utf-8');
   const rows = parseCsv(raw);
 
   return rows
@@ -261,7 +275,11 @@ function parseRanking(v: string): 'above' | 'average' | 'below' | 'n/a' {
 }
 
 export function loadAds(aovUsd = 10): Ad[] {
-  const raw  = fs.readFileSync(path.join(DATA_DIR, 'ads.csv'), 'utf-8');
+  // Prefer root-level ad export; fall back to data/ads.csv
+  const filePath = fs.existsSync(PRIMARY_ADS_CSV)
+    ? PRIMARY_ADS_CSV
+    : path.join(DATA_DIR, 'ads.csv');
+  const raw  = fs.readFileSync(filePath, 'utf-8');
   const rows = parseCsv(raw);
 
   return rows

@@ -10,12 +10,12 @@ interface ThemeCtx {
 }
 
 const ThemeContext = createContext<ThemeCtx>({
-  theme: 'dark',
+  theme: 'light',
   toggleTheme: () => {},
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('dark');
+  const [theme, setTheme] = useState<Theme>('light');
 
   // Restore saved preference on mount
   useEffect(() => {

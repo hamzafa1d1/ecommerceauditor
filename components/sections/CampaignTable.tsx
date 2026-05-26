@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardMuted } from '@/components/ui/card';
 import { Badge, FatigueBadge } from '@/components/ui/badge';
@@ -12,14 +12,23 @@ import type { Campaign } from '@/lib/mock-data';
 interface Props {
   data?: Campaign[];
   isLoading?: boolean;
+  highlightedId?: string | null;
 }
 
 type SortKey = 'name' | 'spend' | 'roas' | 'ctr' | 'cpc' | 'cpa' | 'cpm' | 'frequency' | 'fatigueScore';
 
-export function CampaignTable({ data, isLoading }: Props) {
+export function CampaignTable({ data, isLoading, highlightedId }: Props) {
   const { t } = useLang();
   const [sortKey, setSortKey] = useState<SortKey>('fatigueScore');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map());
+
+  // Scroll highlighted row into view when highlightedId changes
+  useEffect(() => {
+    if (!highlightedId) return;
+    const el = rowRefs.current.get(highlightedId);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [highlightedId]);
 
   const COLS: { key: SortKey; label: string; format?: (c: Campaign) => string; right?: boolean }[] = [
     { key: 'name',         label: t.colCampaign },
@@ -92,10 +101,20 @@ export function CampaignTable({ data, isLoading }: Props) {
               </tr>
             </thead>
             <tbody>
-              {sorted.map((c, i) => (
+              {sorted.map((c, i) => {
+                const isHighlighted = highlightedId === c.id;
+                return (
                 <tr
                   key={c.id}
-                  className="border-b border-[var(--border-subtle)] hover:bg-[var(--bg-card-hover)] transition-colors"
+                  ref={el => {
+                    if (el) rowRefs.current.set(c.id, el);
+                    else rowRefs.current.delete(c.id);
+                  }}
+                  className={`border-b border-[var(--border-subtle)] transition-colors ${
+                    isHighlighted
+                      ? 'bg-[var(--accent)]/10 outline outline-1 outline-[var(--accent)]/40'
+                      : 'hover:bg-[var(--bg-card-hover)]'
+                  }`}
                 >
                   <td className="py-3 px-3">
                     <div className="flex flex-col">
@@ -122,7 +141,8 @@ export function CampaignTable({ data, isLoading }: Props) {
                     <FatigueBadge stage={c.fatigueStage} />
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>

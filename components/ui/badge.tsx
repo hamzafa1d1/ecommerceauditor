@@ -3,13 +3,13 @@ import { cn } from '@/lib/utils';
 type Variant = 'fresh' | 'early' | 'confirmed' | 'obvious' | 'default' | 'active' | 'paused';
 
 const styles: Record<Variant, string> = {
-  fresh:     'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  early:     'bg-amber-500/10   text-amber-400   border-amber-500/20',
-  confirmed: 'bg-orange-500/10  text-orange-400  border-orange-500/20',
-  obvious:   'bg-red-500/10     text-red-400     border-red-500/20',
-  default:   'bg-slate-700/40   text-slate-300   border-slate-600/30',
-  active:    'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  paused:    'bg-slate-700/40   text-slate-400   border-slate-600/30',
+  fresh:     'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400',
+  early:     'bg-amber-500/10   text-amber-600   border-amber-500/20   dark:text-amber-400',
+  confirmed: 'bg-orange-500/10  text-orange-600  border-orange-500/20  dark:text-orange-400',
+  obvious:   'bg-red-500/10     text-red-600     border-red-500/20     dark:text-red-400',
+  default:   'bg-[var(--border)] text-[var(--text-muted)] border-[var(--border-subtle)]',
+  active:    'bg-emerald-500/10 text-emerald-600 border-emerald-500/20 dark:text-emerald-400',
+  paused:    'bg-[var(--border)] text-[var(--text-dim)]  border-[var(--border-subtle)]',
 };
 
 interface BadgeProps {

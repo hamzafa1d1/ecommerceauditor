@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Sidebar } from '@/components/layout/Sidebar';
+import { ActionCenter } from '@/components/sections/ActionCenter';
 import { KpiRow } from '@/components/sections/KpiRow';
 import { SpendPacingChart } from '@/components/sections/SpendPacingChart';
 import { RoasCpaChart } from '@/components/sections/RoasCpaChart';
@@ -14,8 +15,9 @@ import { FatigueCurveChart } from '@/components/sections/FatigueCurveChart';
 import { FatigueDonut } from '@/components/sections/FatigueDonut';
 import { CpmTrendChart } from '@/components/sections/CpmTrendChart';
 import { FrequencyHeatmap } from '@/components/sections/FrequencyHeatmap';
-import { NextStepsPanel } from '@/components/sections/NextStepsPanel';
 import { useLang } from '@/components/providers/LangProvider';
+import { buildActions } from '@/lib/actions-engine';
+import type { ActionTarget } from '@/lib/actions-engine';
 
 type DateRange = 'last_7d' | 'last_14d' | 'last_30d' | 'last_90d';
 
@@ -37,6 +39,7 @@ async function fetchAds() {
 
 export function DashboardClient() {
   const [range, setRange] = useState<DateRange>('last_30d');
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
   const { t } = useLang();
 
   const insights = useQuery({
@@ -67,6 +70,24 @@ export function DashboardClient() {
   const cLoading = campaigns.isLoading;
   const aLoading = ads.isLoading;
 
+  // Compute action items from current data — pure, memoised
+  const actions = useMemo(
+    () => buildActions(cData ?? [], adsData ?? []),
+    [cData, adsData],
+  );
+
+  // Called when user clicks "View metrics" on an action card
+  const handleActionClick = useCallback((id: string, type: ActionTarget) => {
+    setHighlightedId(id);
+    const sectionId = type === 'campaign' ? 'campaigns' : 'ads';
+    // Small timeout lets state propagate before scrolling so the row is visible
+    setTimeout(() => {
+      document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 50);
+    // Auto-clear highlight after 4 seconds
+    setTimeout(() => setHighlightedId(null), 4000);
+  }, []);
+
   return (
     <div className="flex h-screen overflow-hidden bg-[var(--bg-base)]">
       <Sidebar
@@ -80,7 +101,7 @@ export function DashboardClient() {
         {/* Header */}
         <div className="sticky top-0 z-10 bg-[var(--bg-base)]/90 backdrop-blur border-b border-[var(--border)] px-6 py-3 flex items-center justify-between">
           <div>
-            <h1 className="text-base font-bold text-slate-100">{t.appTitle}</h1>
+            <h1 className="text-base font-bold text-[var(--text-primary)]">{t.appTitle}</h1>
             <p className="text-[0.6875rem] text-[var(--text-muted)]">
               {t.appSubtitle}
               {iData?.source === 'mock' && (
@@ -97,6 +118,10 @@ export function DashboardClient() {
 
         {/* All sections */}
         <div className="px-6 py-5 space-y-5 max-w-[1400px]">
+          <ActionCenter
+            actions={actions}
+            onActionClick={handleActionClick}
+          />
           <KpiRow
             current={iData?.kpiCurrent}
             prev={iData?.kpiPrev}
@@ -119,6 +144,7 @@ export function DashboardClient() {
           <CampaignTable
             data={cData}
             isLoading={cLoading}
+            highlightedId={highlightedId}
           />
           <BubbleChart
             data={cData}
@@ -127,6 +153,7 @@ export function DashboardClient() {
           <AdsGrid
             data={adsData}
             isLoading={aLoading}
+            highlightedId={highlightedId}
           />
           <FatigueCurveChart
             data={iData?.fatigueCurve}
@@ -145,10 +172,6 @@ export function DashboardClient() {
           <FrequencyHeatmap
             data={iData?.heatmap}
             isLoading={iLoading}
-          />
-          <NextStepsPanel
-            campaigns={cData}
-            ads={adsData}
           />
 
           {/* Footer */}

@@ -6,8 +6,8 @@ import { useLang } from '@/components/providers/LangProvider';
 import { useTheme } from '@/components/providers/ThemeProvider';
 import {
   LayoutDashboard, TrendingUp, Users, BarChart3, Layers,
-  Zap, Palette, Flame, PieChart, Activity, Grid3x3, Lightbulb,
-  RefreshCw, ChevronRight, Sun, Moon,
+  Zap, Palette, Flame, PieChart, Activity, Grid3x3,
+  RefreshCw, ChevronRight, Sun, Moon, Link2,
 } from 'lucide-react';
 
 type DateRange = 'last_7d' | 'last_14d' | 'last_30d' | 'last_90d';
@@ -24,6 +24,15 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
   const { theme, toggleTheme }  = useTheme();
   const [active, setActive]     = useState('kpis');
   const [collapsed, setCollapsed] = useState(false);
+  const [metaStatus, setMetaStatus] = useState<{ connected: boolean; accountName: string | null } | null>(null);
+
+  // Fetch connection status once on mount
+  useEffect(() => {
+    fetch('/api/setup')
+      .then(r => r.json() as Promise<{ connected: boolean; accountName: string | null }>)
+      .then(setMetaStatus)
+      .catch(() => setMetaStatus({ connected: false, accountName: null }));
+  }, []);
 
   const RANGES: { value: DateRange; label: string }[] = [
     { value: 'last_7d',  label: t.last7d  },
@@ -33,18 +42,18 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
   ];
 
   const NAV = [
-    { id: 'kpis',        label: t.navKpis,      icon: LayoutDashboard },
-    { id: 'spend',       label: t.navSpend,     icon: TrendingUp },
-    { id: 'roas-cpa',    label: t.navRoas,      icon: Activity },
-    { id: 'reach',       label: t.navReach,     icon: Users },
-    { id: 'campaigns',   label: t.navCampaigns, icon: BarChart3 },
-    { id: 'bubble',      label: t.navBubble,    icon: Layers },
-    { id: 'ads',         label: t.navAds,       icon: Palette },
-    { id: 'fatigue',     label: t.navFatigue,   icon: Flame },
-    { id: 'donut',       label: t.navDonut,     icon: PieChart },
-    { id: 'cpm-trend',   label: t.navCpm,       icon: Zap },
-    { id: 'heatmap',     label: t.navHeatmap,   icon: Grid3x3 },
-    { id: 'next-steps',  label: t.navNextSteps, icon: Lightbulb },
+    { id: 'action-center', label: 'Action Center',  icon: Zap          },
+    { id: 'kpis',          label: t.navKpis,        icon: LayoutDashboard },
+    { id: 'spend',         label: t.navSpend,       icon: TrendingUp },
+    { id: 'roas-cpa',      label: t.navRoas,        icon: Activity },
+    { id: 'reach',         label: t.navReach,       icon: Users },
+    { id: 'campaigns',     label: t.navCampaigns,   icon: BarChart3 },
+    { id: 'bubble',        label: t.navBubble,      icon: Layers },
+    { id: 'ads',           label: t.navAds,         icon: Palette },
+    { id: 'fatigue',       label: t.navFatigue,     icon: Flame },
+    { id: 'donut',         label: t.navDonut,       icon: PieChart },
+    { id: 'cpm-trend',     label: t.navCpm,         icon: Zap },
+    { id: 'heatmap',       label: t.navHeatmap,     icon: Grid3x3 },
   ];
 
   useEffect(() => {
@@ -84,7 +93,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
           <Zap className="w-3.5 h-3.5 text-white" />
         </div>
         {!collapsed && (
-          <span className="text-sm font-bold text-slate-100 tracking-tight truncate flex-1 min-w-0">
+          <span className="text-sm font-bold text-[var(--text-primary)] tracking-tight truncate flex-1 min-w-0">
             {t.appName}
           </span>
         )}
@@ -106,7 +115,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
         {!collapsed && (
           <button
             onClick={() => setCollapsed(c => !c)}
-            className="text-[var(--text-muted)] hover:text-slate-300 transition-colors shrink-0"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors shrink-0"
           >
             <ChevronRight className={cn('w-4 h-4 transition-transform', !collapsed && 'rotate-180')} />
           </button>
@@ -114,7 +123,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
         {collapsed && (
           <button
             onClick={() => setCollapsed(c => !c)}
-            className="text-[var(--text-muted)] hover:text-slate-300 transition-colors mx-auto mt-1"
+            className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors mx-auto mt-1"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
@@ -134,7 +143,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
                   'text-xs py-1.5 px-2 rounded-md font-medium transition-all',
                   range === r.value
                     ? 'bg-[var(--accent)] text-white'
-                    : 'text-[var(--text-muted)] hover:bg-[var(--border-subtle)] hover:text-slate-300',
+                    : 'text-[var(--text-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--text-primary)]',
                 )}
               >
                 {r.label}
@@ -160,7 +169,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
                 'w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-all mb-0.5',
                 active === item.id
                   ? 'bg-[var(--accent-glow)] text-[var(--accent)] font-medium'
-                  : 'text-[var(--text-muted)] hover:bg-[var(--border-subtle)] hover:text-slate-300',
+                  : 'text-[var(--text-muted)] hover:bg-[var(--border-subtle)] hover:text-[var(--text-primary)]',
               )}
             >
               <Icon className="w-4 h-4 shrink-0" />
@@ -177,13 +186,41 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
           disabled={isRefreshing}
           className={cn(
             'w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all',
-            'bg-[var(--border-subtle)] text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-slate-300',
+            'bg-[var(--border-subtle)] text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-[var(--text-primary)]',
             isRefreshing && 'opacity-60 cursor-not-allowed',
           )}
         >
           <RefreshCw className={cn('w-3.5 h-3.5', isRefreshing && 'animate-spin')} />
           {!collapsed && (isRefreshing ? t.refreshing : t.refresh)}
         </button>
+
+        {/* Meta connection status */}
+        <a
+          href="/setup"
+          title={metaStatus?.connected ? `Connected: ${metaStatus.accountName ?? 'Ad Account'}` : 'Connect Meta Ad Account'}
+          className={cn(
+            'mt-2 w-full flex items-center gap-2 py-1.5 px-3 rounded-lg text-xs font-medium transition-all',
+            metaStatus?.connected
+              ? 'text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/8'
+              : 'text-amber-600 dark:text-amber-400 hover:bg-amber-500/8',
+          )}
+        >
+          <span className={cn(
+            'w-2 h-2 rounded-full shrink-0',
+            metaStatus === null ? 'bg-[var(--text-dim)]' :
+            metaStatus.connected ? 'bg-emerald-500' : 'bg-amber-500',
+          )} />
+          {!collapsed && (
+            <span className="truncate">
+              {metaStatus === null
+                ? 'Checking…'
+                : metaStatus.connected
+                  ? (metaStatus.accountName ?? 'Connected')
+                  : 'Connect Meta Account'}
+            </span>
+          )}
+          {!collapsed && <Link2 className="w-3 h-3 shrink-0 ml-auto" />}
+        </a>
       </div>
     </aside>
   );
