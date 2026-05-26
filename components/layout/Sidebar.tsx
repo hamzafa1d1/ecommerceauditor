@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: SidebarProps) {
-  const { t, lang, toggleLang } = useLang();
+  const { t } = useLang();
   const { theme, toggleTheme }  = useTheme();
   const [active, setActive]     = useState('kpis');
   const [collapsed, setCollapsed] = useState(false);
@@ -89,18 +89,6 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
           </span>
         )}
         {collapsed && <div className="flex-1" />}
-        {/* Language toggle */}
-        <button
-          onClick={toggleLang}
-          title={lang === 'en' ? 'Switch to Arabic' : 'التبديل إلى الإنجليزية'}
-          className={cn(
-            'text-[0.65rem] font-bold px-1.5 py-0.5 rounded border transition-colors',
-            'border-[var(--accent)] text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white',
-            collapsed ? 'mx-auto mt-1' : 'shrink-0',
-          )}
-        >
-          {lang === 'en' ? 'ع' : 'EN'}
-        </button>
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
