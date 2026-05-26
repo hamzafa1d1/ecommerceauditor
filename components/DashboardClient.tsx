@@ -37,7 +37,7 @@ async function fetchAds() {
 
 export function DashboardClient() {
   const [range, setRange] = useState<DateRange>('last_30d');
-  const { t, lang } = useLang();
+  const { t } = useLang();
 
   const insights = useQuery({
     queryKey: ['insights', range],
@@ -91,7 +91,7 @@ export function DashboardClient() {
             </p>
           </div>
           <div className="text-[0.6875rem] text-[var(--text-muted)]">
-            {new Date().toLocaleDateString(lang === 'ar' ? 'ar-TN' : 'en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}
+            {new Date().toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' })}
           </div>
         </div>
 

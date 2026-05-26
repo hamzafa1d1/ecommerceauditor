@@ -65,7 +65,7 @@ export function Sidebar({ range, onRangeChange, onRefresh, isRefreshing }: Sideb
     els.forEach(el => observer.observe(el));
     return () => observer.disconnect();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lang]);
+  }, []);
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
